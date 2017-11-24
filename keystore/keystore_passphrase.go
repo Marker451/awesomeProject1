@@ -152,7 +152,7 @@ func EncryptKey(key *Key, auth string, scryptN, scryptP int) ([]byte, error) {
 		IV: hex.EncodeToString(iv),
 	}
 
-	cryptoStruct := cryptoJSON{
+	cryptoStruct := CryptoJSON{
 		Cipher:       "aes-128-ctr",
 		CipherText:   hex.EncodeToString(cipherText),
 		CipherParams: cipherParamsJSON,
@@ -301,23 +301,23 @@ func decryptKeyV1(keyProtected *encryptedKeyJSONV1, auth string) (keyBytes []byt
 	return plainText, keyId, err
 }
 
-func getKDFKey(cryptoJSON cryptoJSON, auth string) ([]byte, error) {
+func getKDFKey(CryptoJSON CryptoJSON, auth string) ([]byte, error) {
 	authArray := []byte(auth)
-	salt, err := hex.DecodeString(cryptoJSON.KDFParams["salt"].(string))
+	salt, err := hex.DecodeString(CryptoJSON.KDFParams["salt"].(string))
 	if err != nil {
 		return nil, err
 	}
-	dkLen := ensureInt(cryptoJSON.KDFParams["dklen"])
+	dkLen := ensureInt(CryptoJSON.KDFParams["dklen"])
 
-	if cryptoJSON.KDF == keyHeaderKDF {
-		n := ensureInt(cryptoJSON.KDFParams["n"])
-		r := ensureInt(cryptoJSON.KDFParams["r"])
-		p := ensureInt(cryptoJSON.KDFParams["p"])
+	if CryptoJSON.KDF == keyHeaderKDF {
+		n := ensureInt(CryptoJSON.KDFParams["n"])
+		r := ensureInt(CryptoJSON.KDFParams["r"])
+		p := ensureInt(CryptoJSON.KDFParams["p"])
 		return scrypt.Key(authArray, salt, n, r, p, dkLen)
 
-	} else if cryptoJSON.KDF == "pbkdf2" {
-		c := ensureInt(cryptoJSON.KDFParams["c"])
-		prf := cryptoJSON.KDFParams["prf"].(string)
+	} else if CryptoJSON.KDF == "pbkdf2" {
+		c := ensureInt(CryptoJSON.KDFParams["c"])
+		prf := CryptoJSON.KDFParams["prf"].(string)
 		if prf != "hmac-sha256" {
 			return nil, fmt.Errorf("Unsupported PBKDF2 PRF: %s", prf)
 		}
@@ -325,25 +325,25 @@ func getKDFKey(cryptoJSON cryptoJSON, auth string) ([]byte, error) {
 		return key, nil
 	}
 
-	return nil, fmt.Errorf("Unsupported KDF: %s", cryptoJSON.KDF)
+	return nil, fmt.Errorf("Unsupported KDF: %s", CryptoJSON.KDF)
 }
-func GetKDFKey(cryptoJSON cryptoJSON, auth string) ([]byte, error) {
+func GetKDFKey(CryptoJSON CryptoJSON, auth string) ([]byte, error) {
 	authArray := []byte(auth)
-	salt, err := hex.DecodeString(cryptoJSON.KDFParams["salt"].(string))
+	salt, err := hex.DecodeString(CryptoJSON.KDFParams["salt"].(string))
 	if err != nil {
 		return nil, err
 	}
-	dkLen := ensureInt(cryptoJSON.KDFParams["dklen"])
+	dkLen := ensureInt(CryptoJSON.KDFParams["dklen"])
 
-	if cryptoJSON.KDF == keyHeaderKDF {
-		n := ensureInt(cryptoJSON.KDFParams["n"])
-		r := ensureInt(cryptoJSON.KDFParams["r"])
-		p := ensureInt(cryptoJSON.KDFParams["p"])
+	if CryptoJSON.KDF == keyHeaderKDF {
+		n := ensureInt(CryptoJSON.KDFParams["n"])
+		r := ensureInt(CryptoJSON.KDFParams["r"])
+		p := ensureInt(CryptoJSON.KDFParams["p"])
 		return scrypt.Key(authArray, salt, n, r, p, dkLen)
 
-	} else if cryptoJSON.KDF == "pbkdf2" {
-		c := ensureInt(cryptoJSON.KDFParams["c"])
-		prf := cryptoJSON.KDFParams["prf"].(string)
+	} else if CryptoJSON.KDF == "pbkdf2" {
+		c := ensureInt(CryptoJSON.KDFParams["c"])
+		prf := CryptoJSON.KDFParams["prf"].(string)
 		if prf != "hmac-sha256" {
 			return nil, fmt.Errorf("Unsupported PBKDF2 PRF: %s", prf)
 		}
@@ -351,7 +351,7 @@ func GetKDFKey(cryptoJSON cryptoJSON, auth string) ([]byte, error) {
 		return key, nil
 	}
 
-	return nil, fmt.Errorf("Unsupported KDF: %s", cryptoJSON.KDF)
+	return nil, fmt.Errorf("Unsupported KDF: %s", CryptoJSON.KDF)
 }
 
 // TODO: can we do without this when unmarshalling dynamic JSON?
